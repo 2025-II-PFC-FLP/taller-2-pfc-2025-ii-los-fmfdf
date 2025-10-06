@@ -7,7 +7,11 @@ import org.junit.runner.RunWith
 @RunWith(classOf[JUnitRunner])
 final class ConjuntosDifusosTest extends AnyFunSuite {
 
-  private val m = new ConjuntosDifusos(); import m._
+  // ============================================================
+  //                   PRUEBAS (PERTENECE Y GRANDE)
+  // ============================================================
+
+  val m = new ConjuntosDifusos(); import m._
 
   test("pertenece aplica la función característica") {
     val pares: ConjDifuso = x => if (x % 2 == 0) 1.0 else 0.0
@@ -22,6 +26,7 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
     assert(g(0) === 0.0)
     assert(g(-5) === 0.0)
   }
+
   test("pertenece respeta exactamente la función característica") {
     val ident: ConjDifuso = x => (x / 10.0).max(0.0).min(1.0) // cualquier función [0,1]
     assert(pertenece(0, ident) === 0.0)
@@ -52,6 +57,29 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
   test("grande valida parámetros con require") {
     assertThrows[IllegalArgumentException] { grande(0, 2) }
     assertThrows[IllegalArgumentException] { grande(1, 0) }
+  }
+
+  // ============================================================
+  //               PRUEBAS (INCLUSION E IGUALDAD)
+  // ============================================================
+
+  val cdCero: ConjDifuso = (_: Int) => 0.0              // conjunto vacío (todo 0)
+  val cdUno: ConjDifuso = (_: Int) => 1.0               // conjunto total (todo 1)
+  val cdMitad: ConjDifuso = (_: Int) => 0.5             // conjunto constante en 0.5
+  val cdGrande: ConjDifuso = grande(1, 2)               // conjunto menos restrictivo
+  val cdMasGrande: ConjDifuso = grande(1, 3)            // conjunto más restrictivo
+
+  test("inclusion: conjunto vacío está incluido en cualquier conjunto") {
+    assert(inclusion(cdCero, cdGrande))
+    assert(inclusion(cdCero, cdUno))
+  }
+
+  test("inclusion: el más restrictivo (e mayor) está incluido en el menos restrictivo (e menor)") {
+    assert(inclusion(cdMasGrande, cdGrande))  // ✓ verdadero
+  }
+
+  test("inclusion: el menos restrictivo (e menor) NO está incluido en el más restrictivo (e mayor)") {
+    assert(!inclusion(cdGrande, cdMasGrande)) // ✓ verdadero
   }
 
 }
