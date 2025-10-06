@@ -71,6 +71,35 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
     assert(comp0(5) === 1.0)
     assert(comp1(5) === 0.0)
   }
+  test("complemento: suma de pertenencia y complemento ≈ 1") {
+    val g = grande(2, 2)
+    (1 to 5).foreach { x =>
+      val suma = g(x) + complemento(g)(x)
+      assert(math.abs(suma - 1.0) < 1e-9)
+    }
+  }
+
+  test("complemento: siempre retorna valores en [0,1]") {
+    val g = grande(3, 2)
+    (0 to 5).foreach { x =>
+      val v = complemento(g)(x)
+      assert(v >= 0.0 && v <= 1.0)
+    }
+  }
+
+  test("complemento: mantiene simetría") {
+    val g = grande(2, 2)
+    val c = complemento(g)
+    (1 to 5).foreach { x =>
+      assert(math.abs(g(x) - complemento(c)(x)) < 1e-9)
+    }
+  }
+
+  test("complemento: en números grandes, el complemento tiende a 0") {
+    val g = grande(1, 2)
+    assert(complemento(g)(100) < 0.05)
+  }
+
 
   // ============================================================
   //                         UNIÓN
@@ -85,6 +114,34 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
     }
   }
 
+  test("union: con el conjunto universal devuelve el universal") {
+    val g = grande(2, 2)
+    val cdUno: ConjDifuso = (_: Int) => 1.0
+    val u = union(g, cdUno)
+    (0 to 5).foreach(x => assert(u(x) === 1.0))
+  }
+
+  test("union: con conjunto vacío devuelve el mismo conjunto") {
+    val g = grande(2, 2)
+    val cdCero: ConjDifuso = (_: Int) => 0.0
+    val u = union(g, cdCero)
+    (1 to 5).foreach(x => assert(math.abs(u(x) - g(x)) < 1e-9))
+  }
+
+  test("union: es conmutativa (union(A,B) = union(B,A))") {
+    val g1 = grande(2, 2)
+    val g2 = grande(4, 3)
+    val u1 = union(g1, g2)
+    val u2 = union(g2, g1)
+    (1 to 10).foreach(x => assert(math.abs(u1(x) - u2(x)) < 1e-9))
+  }
+
+  test("union: es idempotente (union(A, A) = A)") {
+    val g = grande(2, 3)
+    val u = union(g, g)
+    (1 to 5).foreach(x => assert(math.abs(u(x) - g(x)) < 1e-9))
+  }
+
   // ============================================================
   //                       INTERSECCIÓN
   // ============================================================
@@ -97,6 +154,35 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
       assert(i === math.min(g1(x), g2(x)))
     }
   }
+  test("interseccion: con el conjunto universal devuelve el mismo conjunto") {
+    val g = grande(2, 2)
+    val cdUno: ConjDifuso = (_: Int) => 1.0
+    val i = interseccion(g, cdUno)
+    (0 to 5).foreach(x => assert(math.abs(i(x) - g(x)) < 1e-9))
+  }
+
+  test("interseccion: con conjunto vacío devuelve vacío") {
+    val g = grande(2, 2)
+    val cdCero: ConjDifuso = (_: Int) => 0.0
+    val i = interseccion(g, cdCero)
+    (1 to 5).foreach(x => assert(i(x) === 0.0))
+  }
+
+  test("interseccion: es conmutativa (inter(A,B) = inter(B,A))") {
+    val g1 = grande(2, 2)
+    val g2 = grande(4, 3)
+    val i1 = interseccion(g1, g2)
+    val i2 = interseccion(g2, g1)
+    (1 to 10).foreach(x => assert(math.abs(i1(x) - i2(x)) < 1e-9))
+  }
+
+
+  test("interseccion: es idempotente (inter(A, A) = A)") {
+    val g = grande(2, 3)
+    val i = interseccion(g, g)
+    (1 to 5).foreach(x => assert(math.abs(i(x) - g(x)) < 1e-9))
+  }
+
 
   // ============================================================
   //               PRUEBAS (INCLUSION E IGUALDAD)
@@ -120,5 +206,15 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
   test("inclusion: el menos restrictivo (e menor) NO está incluido en el más restrictivo (e mayor)") {
     assert(!inclusion(cdGrande, cdMasGrande)) // ✓ verdadero
   }
+  test("igualdad: dos conjuntos idénticos deben ser iguales") {
+    val a = grande(2, 2)
+    val b = grande(2, 2)
+    assert(igualdad(a, b))
+  }
 
+  test("igualdad: conjuntos distintos no deben ser iguales") {
+    val a = grande(1, 2)
+    val b = grande(1, 3)
+    assert(!igualdad(a, b))
+  }
 }
