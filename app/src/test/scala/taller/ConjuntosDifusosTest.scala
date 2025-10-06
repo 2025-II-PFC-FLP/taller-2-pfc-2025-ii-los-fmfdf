@@ -60,6 +60,45 @@ final class ConjuntosDifusosTest extends AnyFunSuite {
   }
 
   // ============================================================
+  //               PRUEBAS (COMPLEMENTO, UNION, INTERSECCION)
+  // ============================================================
+
+  test("complemento: invierte 0 y 1 correctamente") {
+    val cdCero: ConjDifuso = (_: Int) => 0.0
+    val cdUno: ConjDifuso  = (_: Int) => 1.0
+    val comp0 = complemento(cdCero)
+    val comp1 = complemento(cdUno)
+    assert(comp0(5) === 1.0)
+    assert(comp1(5) === 0.0)
+  }
+
+  // ============================================================
+  //                         UNIÓN
+  // ============================================================
+
+  test("union: devuelve el mayor grado de pertenencia") {
+    val g1 = grande(2, 2)
+    val g2 = grande(4, 2)
+    (1 to 5).foreach { x =>
+      val u = union(g1, g2)(x)
+      assert(u === math.max(g1(x), g2(x)))
+    }
+  }
+
+  // ============================================================
+  //                       INTERSECCIÓN
+  // ============================================================
+
+  test("interseccion: devuelve el menor grado de pertenencia") {
+    val g1 = grande(2, 2)
+    val g2 = grande(4, 2)
+    (1 to 5).foreach { x =>
+      val i = interseccion(g1, g2)(x)
+      assert(i === math.min(g1(x), g2(x)))
+    }
+  }
+
+  // ============================================================
   //               PRUEBAS (INCLUSION E IGUALDAD)
   // ============================================================
 
